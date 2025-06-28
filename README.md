@@ -4,11 +4,7 @@ An AirBnB-like web application built with a layered architecture. HBnB allows us
 
 ## 🔧 Tech Stack
 - Python (OOP, SOLID Principles)
-- Flask REST API
-- SQLAlchemy (ORM)
-- PostgreSQL or MySQL
-- Mermaid.js / Draw.io for UML
-- Deployed with Docker (upcoming)
+- FlowChart for UML
 
 ## 📐 Architecture
 - **Presentation Layer**: RESTful API endpoints for user interaction.
