@@ -1,47 +1,61 @@
-import uuid
-from datetime import datetime
+from typing import List, Optional
+from . import BaseModel
+from .user import User
+from .review import Review
+from .amenity import Amenity
 
-class Place:
-    """Place model for HBnB application"""
-    
+class Place(BaseModel):
+    """Place model with relationships"""
     def __init__(self, **kwargs):
-        self.id = kwargs.get('id', str(uuid.uuid4()))
-        self.created_at = kwargs.get('created_at', datetime.now())
-        self.updated_at = kwargs.get('updated_at', datetime.now())
-        self.user_id = kwargs.get('user_id', '')
-        self.name = kwargs.get('name', '')
-        self.description = kwargs.get('description', '')
-        self.number_rooms = kwargs.get('number_rooms', 0)
-        self.number_bathrooms = kwargs.get('number_bathrooms', 0)
-        self.max_guest = kwargs.get('max_guest', 0)
-        self.price_by_night = kwargs.get('price_by_night', 0)
-        self.latitude = kwargs.get('latitude', 0.0)
-        self.longitude = kwargs.get('longitude', 0.0)
+        super().__init__(**kwargs)
+        self.title: str = kwargs.get('title', '')
+        self.description: str = kwargs.get('description', '')
+        self.price: float = kwargs.get('price', 0.0)
+        self.latitude: float = kwargs.get('latitude', 0.0)
+        self.longitude: float = kwargs.get('longitude', 0.0)
+        self._owner: Optional[User] = None
+        self._reviews: List[Review] = []
+        self._amenities: List[Amenity] = []
         
-        # Relationships
-        self.amenity_ids = []
-        self.review_ids = []
+        if 'owner' in kwargs:
+            self.owner = kwargs['owner']
 
-    def save(self):
-        """Update the updated_at timestamp"""
-        self.updated_at = datetime.now()
+    # Relationship Methods
+    @property
+    def owner(self) -> Optional[User]:
+        return self._owner
 
-    def to_dict(self):
-        """Convert place to dictionary"""
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'name': self.name,
-            'description': self.description,
-            'number_rooms': self.number_rooms,
-            'number_bathrooms': self.number_bathrooms,
-            'max_guest': self.max_guest,
-            'price_by_night': self.price_by_night,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
-            'amenity_ids': self.amenity_ids,
-            'review_ids': self.review_ids,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
-            '__class__': self.__class__.__name__
-        }
+    @owner.setter
+    def owner(self, user: User):
+        if self._owner is not None:
+            self._owner._places.remove(self)
+        self._owner = user
+        user.add_place(self)
+        self.save()
+
+    @property
+    def reviews(self) -> List[Review]:
+        return self._reviews
+
+    def add_review(self, review: Review):
+        if review not in self._reviews:
+            self._reviews.append(review)
+            if review.place != self:
+                review.place = self
+            self.save()
+
+    @property
+    def amenities(self) -> List[Amenity]:
+        return self._amenities
+
+    def add_amenity(self, amenity: Amenity):
+        if amenity not in self._amenities:
+            self._amenities.append(amenity)
+            amenity.add_place(self)
+            self.save()
+
+    def remove_amenity(self, amenity: Amenity):
+        if amenity in self._amenities:
+            self._amenities.remove(amenity)
+            amenity.remove_place(self)
+            self.save()
