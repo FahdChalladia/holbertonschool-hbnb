@@ -1,51 +1,37 @@
-import uuid
-from datetime import datetime
+from typing import List, Optional
+from . import BaseModel
 
-class User:
-    """Modèle utilisateur pour HBnB"""
-    
-    def __init__(self, *args, **kwargs):
-        """Initialisation avec génération automatique des timestamps"""
-        self.id = kwargs.get('id', str(uuid.uuid4()))
-        self.created_at = kwargs.get('created_at', datetime.now())
-        self.updated_at = kwargs.get('updated_at', datetime.now())
-        
-        # Attributs spécifiques à User
-        self.email = kwargs.get('email', '')
-        self.password = kwargs.get('password', '')  # Note: Devrait être hashé en production
-        self.first_name = kwargs.get('first_name', '')
-        self.last_name = kwargs.get('last_name', '')
-        
-        # Gestion des arguments supplémentaires
-        for key, value in kwargs.items():
-            if not hasattr(self, key):
-                setattr(self, key, value)
+class User(BaseModel):
+    """User model with relationships"""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.first_name: str = kwargs.get('first_name', '')
+        self.last_name: str = kwargs.get('last_name', '')
+        self.email: str = kwargs.get('email', '')
+        self.is_admin: bool = kwargs.get('is_admin', False)
+        self._places: List['Place'] = []
+        self._reviews: List['Review'] = []
 
-    def save(self):
-        """Met à jour le timestamp updated_at"""
-        self.updated_at = datetime.now()
-        return self
+    # Relationship Methods
+    @property
+    def places(self) -> List['Place']:
+        return self._places
 
-    def update(self, data):
-        """Met à jour les attributs avec les nouvelles données"""
-        for key, value in data.items():
-            if hasattr(self, key) and key not in ['id', 'created_at']:
-                setattr(self, key, value)
-        self.save()
-        return self
+    @property
+    def reviews(self) -> List['Review']:
+        return self._reviews
 
-    def to_dict(self):
-        """Convertit l'instance en dictionnaire pour sérialisation"""
-        return {
-            'id': self.id,
-            'email': self.email,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
-            '__class__': self.__class__.__name__
-        }
+    def add_place(self, place: 'Place'):
+        if place not in self._places:
+            if place.owner and place.owner != self:
+                raise ValueError("Place already owned by another user")
+            self._places.append(place)
+            place.owner = self
+            self.save()
 
-    def __str__(self):
-        """Représentation textuelle de l'utilisateur"""
-        return f"[User] ({self.id}) {self.__dict__}"
+    def add_review(self, review: 'Review'):
+        if review not in self._reviews:
+            self._reviews.append(review)
+            if review.user != self:
+                review.user = self
+            self.save()
