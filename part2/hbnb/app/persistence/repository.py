@@ -25,6 +25,21 @@ class Repository(ABC):
     def get_by_attribute(self, attr_name, attr_value):
         pass
 
+    def get_all_users(self) -> List[User]:
+        """Get all users from storage"""
+        return list(self._users.values())
+    
+    def get_user_by_email(self, email: str) -> Optional[User]:
+        """Get user by email"""
+        for user in self._users.values():
+            if user.email == email:
+                return user
+        return None
+    
+    def save_user(self, user: User) -> None:
+        """Persist user changes"""
+        self._users[user.id] = user
+
 
 class InMemoryRepository(Repository):
     def __init__(self):
