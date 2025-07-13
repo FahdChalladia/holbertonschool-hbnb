@@ -1,86 +1,74 @@
 from flask_restx import Namespace, Resource, fields
-from app.persistence.facade import hbnb_facade
-from app.business_logic.place import Place
-from app.business_logic.user import User
-from app.business_logic.amenity import Amenity
+from app.services import facade
 
 api = Namespace('places', description='Place operations')
 
-# Model for API documentation
+# Models
+user_model = api.model('User', {
+    'id': fields.String,
+    'first_name': fields.String,
+    'last_name': fields.String,
+    'email': fields.String,
+})
+
+amenity_model = api.model('Amenity', {
+    'id': fields.String,
+    'name': fields.String,
+})
+
 place_model = api.model('Place', {
-    'id': fields.String(readonly=True, description='Place identifier'),
-    'owner_id': fields.String(required=True, description='Owner user ID'),
-    'name': fields.String(required=True, description='Place name'),
-    'description': fields.String(description='Place description'),
-    'latitude': fields.Float(description='Geographic latitude'),
-    'longitude': fields.Float(description='Geographic longitude'),
-    'amenity_ids': fields.List(fields.String, description='List of amenity IDs'),
-    'created_at': fields.DateTime(readonly=True, description='Creation date'),
-    'updated_at': fields.DateTime(readonly=True, description='Update date')
+    'title': fields.String(required=True),
+    'description': fields.String,
+    'price': fields.Float(required=True),
+    'latitude': fields.Float(required=True),
+    'longitude': fields.Float(required=True),
+    'owner_id': fields.String(required=True),
+    'amenities': fields.List(fields.String, required=True)
 })
 
 @api.route('/')
 class PlaceList(Resource):
-    @api.marshal_list_with(place_model)
-    def get(self):
-        """Get all places"""
-        return hbnb_facade.get_all(Place), 200
-
     @api.expect(place_model)
-    @api.marshal_with(place_model, code=201)
+    @api.response(201, 'Place successfully created')
+    @api.response(400, 'Invalid input data')
     def post(self):
-        """Create a new place"""
+        """Register a new place"""
         data = api.payload
-        
-        # Validate owner exists
-        owner = hbnb_facade.get(User, data['owner_id'])
-        if not owner:
-            api.abort(400, "Owner user does not exist")
-            
-        # Validate amenities exist
-        for amenity_id in data.get('amenity_ids', []):
-            if not hbnb_facade.get(Amenity, amenity_id):
-                api.abort(400, f"Amenity with ID {amenity_id} does not exist")
-        
         try:
-            place = hbnb_facade.create(Place, **data)
-            return place, 201
+            place = facade.create_place(data)
+            return place.to_dict(), 201
         except ValueError as e:
-            api.abort(400, str(e))
+            return {'message': str(e)}, 400
 
-@api.route('/<string:place_id>')
+    @api.response(200, 'List of places retrieved successfully')
+    def get(self):
+        """Retrieve a list of all places"""
+        places = [p.to_dict() for p in facade.get_all_places()]
+        return places, 200
+
+
+@api.route('/<place_id>')
 class PlaceResource(Resource):
-    @api.marshal_with(place_model)
+    @api.response(200, 'Place details retrieved successfully')
+    @api.response(404, 'Place not found')
     def get(self, place_id):
-        """Get place by ID"""
-        place = hbnb_facade.get(Place, place_id)
+        """Get place details by ID"""
+        place = facade.get_place(place_id)
         if not place:
-            api.abort(404, "Place not found")
-        return place, 200
+            return {'message': 'Place not found'}, 404
+        return place.to_dict(include_owner=True, include_amenities=True), 200
 
     @api.expect(place_model)
-    @api.marshal_with(place_model)
+    @api.response(200, 'Place updated successfully')
+    @api.response(404, 'Place not found')
+    @api.response(400, 'Invalid input data')
     def put(self, place_id):
-        """Update place information"""
+        """Update a place's information"""
         data = api.payload
-        place = hbnb_facade.get(Place, place_id)
-        if not place:
-            api.abort(404, "Place not found")
-            
-        # Validate owner if being updated
-        if 'owner_id' in data:
-            owner = hbnb_facade.get(User, data['owner_id'])
-            if not owner:
-                api.abort(400, "Owner user does not exist")
-                
-        # Validate amenities if being updated
-        if 'amenity_ids' in data:
-            for amenity_id in data['amenity_ids']:
-                if not hbnb_facade.get(Amenity, amenity_id):
-                    api.abort(400, f"Amenity with ID {amenity_id} does not exist")
-        
         try:
-            updated_place = hbnb_facade.update(Place, place_id, **data)
-            return updated_place, 200
+            place = facade.update_place(place_id, data)
+            if not place:
+                return {'message': 'Place not found'}, 404
+            return {'message': 'Place updated successfully'}, 200
         except ValueError as e:
-            api.abort(400, str(e))
+            return {'message': str(e)}, 400
