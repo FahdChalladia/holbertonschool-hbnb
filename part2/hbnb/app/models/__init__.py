@@ -19,7 +19,13 @@ class BaseModel:
     def save(self):
         """Updates updated_at timestamp"""
         self.updated_at = datetime.now()
-    
+
+    def update(self, data):
+        """Update the attributes of the object based on the provided dictionary"""
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.save()
     def to_dict(self) -> Dict[str, Any]:
         """Converts instance to dictionary"""
         obj_dict = self.__dict__.copy()
