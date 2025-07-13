@@ -1,43 +1,31 @@
-from typing import Optional
-from . import BaseModel
-from .user import User
-from .place import Place
+from .base import BaseModel
 
 class Review(BaseModel):
-    """Review model with relationships"""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.text: str = kwargs.get('text', '')
-        self.rating: int = kwargs.get('rating', 0)
-        self._place: Optional[Place] = None
-        self._user: Optional[User] = None
+    """Review class representing user reviews of places"""
+    
+    def __init__(self, *args, **kwargs):
+        """Initialize Review instance"""
+        super().__init__(*args, **kwargs)
+        self.place_id = kwargs.get('place_id', '')
+        self.user_id = kwargs.get('user_id', '')
+        self.text = kwargs.get('text', '')
         
-        if 'place' in kwargs:
-            self.place = kwargs['place']
-        if 'user' in kwargs:
-            self.user = kwargs['user']
-
-    # Relationship Methods
-    @property
-    def place(self) -> Optional[Place]:
-        return self._place
-
-    @place.setter
-    def place(self, place: Place):
-        if self._place is not None:
-            self._place._reviews.remove(self)
-        self._place = place
-        place.add_review(self)
-        self.save()
-
-    @property
-    def user(self) -> Optional[User]:
-        return self._user
-
-    @user.setter
-    def user(self, user: User):
-        if self._user is not None:
-            self._user._reviews.remove(self)
-        self._user = user
-        user.add_review(self)
-        self.save()*
+        # Validate required fields
+        if not self.place_id:
+            raise ValueError("place_id is required")
+        if not self.user_id:
+            raise ValueError("user_id is required")
+        if not self.text:
+            raise ValueError("text is required")
+    
+    def to_dict(self):
+        """Return dictionary representation with extended attributes"""
+        result = super().to_dict()
+        # Add user details if available
+        user = hbnb_facade.get(User, self.user_id)
+        if user:
+            result['user'] = {
+                'first_name': user.first_name,
+                'last_name': user.last_name
+            }
+        return result
