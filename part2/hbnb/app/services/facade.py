@@ -78,3 +78,67 @@ class HBnBFacade:
                 setattr(place, key, value)
         storage.save()
         return place
+    
+    def create_review(self, review_data):
+        text = review_data.get('text')
+        rating = review_data.get('rating')
+        user_id = review_data.get('user_id')
+        place_id = review_data.get('place_id')
+
+        if not all([text, rating, user_id, place_id]):
+            raise ValueError("All fields (text, rating, user_id, place_id) are required")
+
+        if not (1 <= rating <= 5):
+            raise ValueError("Rating must be between 1 and 5")
+
+        user = User.get(user_id)
+        if not user:
+            raise ValueError("User does not exist")
+
+        place = Place.get(place_id)
+        if not place:
+            raise ValueError("Place does not exist")
+
+        review = Review(text=text, rating=rating, user_id=user_id, place_id=place_id)
+        review.save()
+        return review
+
+    def get_review(self, review_id):
+        review = Review.get(review_id)
+        if not review:
+            raise ValueError("Review not found")
+        return review
+
+    def get_all_reviews(self):
+        return Review.all()
+
+    def get_reviews_by_place(self, place_id):
+        place = Place.get(place_id)
+        if not place:
+            raise ValueError("Place not found")
+        return [r for r in Review.all() if r.place_id == place_id]
+
+    def update_review(self, review_id, review_data):
+        review = Review.get(review_id)
+        if not review:
+            raise ValueError("Review not found")
+
+        text = review_data.get("text")
+        rating = review_data.get("rating")
+
+        if text:
+            review.text = text
+        if rating:
+            if not (1 <= rating <= 5):
+                raise ValueError("Rating must be between 1 and 5")
+            review.rating = rating
+
+        review.save()
+        return review
+
+    def delete_review(self, review_id):
+        review = Review.get(review_id)
+        if not review:
+            raise ValueError("Review not found")
+        review.delete()
+        return True
