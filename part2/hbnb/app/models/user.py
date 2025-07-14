@@ -1,37 +1,18 @@
-from typing import List, Optional
-from . import BaseModel
+import re
+from app.models.base_model import BaseModel
 
 class User(BaseModel):
-    """User model with relationships"""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.first_name: str = kwargs.get('first_name', '')
-        self.last_name: str = kwargs.get('last_name', '')
-        self.email: str = kwargs.get('email', '')
-        self.is_admin: bool = kwargs.get('is_admin', False)
-        self._places: List['Place'] = []
-        self._reviews: List['Review'] = []
+    def __init__(self, first_name, last_name, email, is_admin=False):
+        super().__init__()
 
-    # Relationship Methods
-    @property
-    def places(self) -> List['Place']:
-        return self._places
+        if not first_name or len(first_name) > 50:
+            raise ValueError("First name is required and must be <= 50 characters.")
+        if not last_name or len(last_name) > 50:
+            raise ValueError("Last name is required and must be <= 50 characters.")
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            raise ValueError("Email is invalid.")
 
-    @property
-    def reviews(self) -> List['Review']:
-        return self._reviews
-
-    def add_place(self, place: 'Place'):
-        if place not in self._places:
-            if place.owner and place.owner != self:
-                raise ValueError("Place already owned by another user")
-            self._places.append(place)
-            place.owner = self
-            self.save()
-
-    def add_review(self, review: 'Review'):
-        if review not in self._reviews:
-            self._reviews.append(review)
-            if review.user != self:
-                review.user = self
-            self.save()
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.is_admin = is_admin
