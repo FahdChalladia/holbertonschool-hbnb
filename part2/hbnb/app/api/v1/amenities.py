@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
-from app.persistence.facade import hbnb_facade
-from app.business_logic.amenity import Amenity
+from app.services.facade import HBnBFacade
+from app.models.amenity import Amenity
 
 api = Namespace('amenities', description='Amenity operations')
 

@@ -1,8 +1,8 @@
 from flask_restx import Namespace, Resource, fields
-from app.persistence.facade import hbnb_facade
-from app.business_logic.review import Review
-from app.business_logic.place import Place
-from app.business_logic.user import User
+from app.services.facade import HBnBFacade
+from app.models.review import Review
+from app.models.place import Place
+from app.models.user import User
 
 api = Namespace('reviews', description='Review operations')
 

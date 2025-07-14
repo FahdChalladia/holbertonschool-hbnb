@@ -34,7 +34,6 @@ place_model = api.model('Place', {
     'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities'),
     'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
 })
-})
 
 @api.route('/')
 class PlaceList(Resource):
