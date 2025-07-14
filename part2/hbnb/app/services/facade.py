@@ -1,6 +1,7 @@
 from app.models.amenity import Amenity
-from app.persistence.repository import InMemoryRepository
+from app.persistence.repository import InMemoryRepository 
 from app.models.place import Place
+from app.persistence.storage import storage
 
 class HBnBFacade:
     def __init__(self):
