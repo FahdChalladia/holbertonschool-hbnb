@@ -1,6 +1,8 @@
-from uuid import uuid4
+from app.models.base_model import BaseModel
 
-class Amenity:
-    def __init__(self, name, id=None):
-        self.id = id or str(uuid4())
+class Amenity(BaseModel):
+    def __init__(self, name):
+        super().__init__()
+        if not name or len(name) > 50:
+            raise ValueError("Amenity name is required and must be <= 50 characters.")
         self.name = name
