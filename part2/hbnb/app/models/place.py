@@ -1,7 +1,7 @@
 from app.models.base_model import BaseModel
 
 class Place(BaseModel):
-    def __init__(self, title, description, price, latitude, longitude, owner):
+    def __init__(self, title, description, price, latitude, longitude, owner_id):
         super().__init__()
 
         if not title or len(title) > 100:
@@ -18,7 +18,7 @@ class Place(BaseModel):
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-        self.owner = owner
+        self.owner_id = owner_id
         self.reviews = []
         self.amenities = []
 
@@ -27,3 +27,18 @@ class Place(BaseModel):
 
     def add_amenity(self, amenity):
         self.amenities.append(amenity)
+    
+    def to_dict(self, include_owner=False, include_amenities=False):
+        data = {
+            'id': self.id,
+            'name': self.title
+        }
+
+        if include_owner and self.owner_id:
+            data['owner'] = self.owner_id.to_dict() if hasattr(self.owner_id, 'to_dict') else str(self.owner_id)
+
+        if include_amenities:
+            data['amenities'] = [a.to_dict() if hasattr(a, 'to_dict') else str(a) for a in self.amenities]
+
+        return data
+

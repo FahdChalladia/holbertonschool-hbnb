@@ -1,7 +1,7 @@
 from app.models.base_model import BaseModel
 
 class Review(BaseModel):
-    def __init__(self, text, rating, place, user):
+    def __init__(self, text, rating, place_id, user_id):
         super().__init__()
 
         if not text:
@@ -11,6 +11,6 @@ class Review(BaseModel):
 
         self.text = text
         self.rating = rating
-        self.place = place
-        self.user = user
+        self.place = place_id
+        self.user = user_id
         

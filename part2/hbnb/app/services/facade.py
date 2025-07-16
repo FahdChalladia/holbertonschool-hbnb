@@ -1,11 +1,17 @@
-from app.models.amenity import Amenity
 from app.persistence.repository import InMemoryRepository 
 from app.models.place import Place
+from app.models.user import User 
+from app.models.amenity import Amenity
+from app.models.review import Review
+
 from app.persistence.storage import storage
 
 class HBnBFacade:
     def __init__(self):
         self.user_repo = InMemoryRepository()
+        self.amenity_repo = InMemoryRepository()
+        self.place_repo=InMemoryRepository()
+        self.review_repo=InMemoryRepository()
 
     def create_user(self, user_data):
         user = User(**user_data)
@@ -19,7 +25,7 @@ class HBnBFacade:
         return self.user_repo.get_by_attribute('email', email)
 
     def get_all_users(self):
-        return self.user_repo.all()
+        return self.user_repo.get_all()
 
     def update_user(self, user_id, update_data):
         user = self.user_repo.get(user_id)
@@ -31,7 +37,7 @@ class HBnBFacade:
         return user
     
     def create_amenity(self, amenity_data):
-        if not amenity_data.get("name"):
+        if not amenity_data.get("name"): #####get by id 
             raise ValueError("Amenity name is required")
         amenity = Amenity(**amenity_data)
         self.amenity_repo.add(amenity)
@@ -41,7 +47,7 @@ class HBnBFacade:
         return self.amenity_repo.get(amenity_id)
 
     def get_all_amenities(self):
-        return self.amenity_repo.all()
+        return self.amenity_repo.get_all()
 
     def update_amenity(self, amenity_id, amenity_data):
         amenity = self.amenity_repo.get(amenity_id)
@@ -54,23 +60,22 @@ class HBnBFacade:
     def create_place(self, place_data):
         try:
             place = Place(**place_data)
-            storage.new(place)
-            storage.save()
+            self.place_repo.add(place)
             return place
         except ValueError as e:
             raise ValueError(str(e))
 
     def get_place(self, place_id):
-        place = storage.get(Place, place_id)
+        place = self.place_repo.get(place_id)
         if not place:
             return None
         return place
 
     def get_all_places(self):
-        return storage.all(Place).values()
+        return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
-        place = storage.get(Place, place_id)
+        place = self.place_repo.get(place_id)
         if not place:
             return None
         for key, value in place_data.items():
@@ -78,6 +83,13 @@ class HBnBFacade:
                 setattr(place, key, value)
         storage.save()
         return place
+    
+    def delete_place(self, place_id):
+        place = self.place_repo.get(place_id)
+        if not place:
+            return False
+        self.place_repo.delete(place_id)
+        return True
     
     def create_review(self, review_data):
         text = review_data.get('text')
@@ -91,16 +103,16 @@ class HBnBFacade:
         if not (1 <= rating <= 5):
             raise ValueError("Rating must be between 1 and 5")
 
-        user = User.get(user_id)
+        user = self.user_repo.get(user_id)
         if not user:
             raise ValueError("User does not exist")
 
-        place = Place.get(place_id)
+        place = self.place_repo.get(place_id)
         if not place:
             raise ValueError("Place does not exist")
 
         review = Review(text=text, rating=rating, user_id=user_id, place_id=place_id)
-        review.save()
+        self.review_repo.add(review)
         return review
 
     def get_review(self, review_id):

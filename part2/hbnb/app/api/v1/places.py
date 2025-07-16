@@ -45,15 +45,32 @@ class PlaceList(Resource):
         data = api.payload
         try:
             place = facade.create_place(data)
-            return place.to_dict(), 201
+            return {
+            "id":place.id,
+            "title": place.title ,
+            "description": place.description,
+            "price": place.price,
+            "latitude": place.latitude,
+            "longitude": place.longitude,
+            "owner_id": place.owner_id
+            }, 201
         except ValueError as e:
             return {'message': str(e)}, 400
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
         """Retrieve a list of all places"""
-        places = [p.to_dict() for p in facade.get_all_places()]
-        return places, 200
+        places = facade.get_all_places()
+        return [{
+            "id":place.id,
+            "title": place.title ,
+            "description": place.description,
+            "price": place.price,
+            "latitude": place.latitude,
+            "longitude": place.longitude,
+            "owner_id": place.owner_id
+            }for place in places], 200
+
 
 
 @api.route('/<place_id>')
@@ -81,3 +98,11 @@ class PlaceResource(Resource):
             return {'message': 'Place updated successfully'}, 200
         except ValueError as e:
             return {'message': str(e)}, 400
+    @api.response(204, 'Place deleted')
+    @api.response(404, 'Place not found')
+    def delete(self, place_id):
+        """Delete a place by ID"""
+        success = facade.delete_place(place_id)
+        if not success:
+            return {'message': 'Place not found'}, 404
+        return '', 204

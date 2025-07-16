@@ -1,9 +1,10 @@
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from app.models.review import Review
+from app.services import facade
 from app.models.place import Place
 from app.models.user import User
-
+facade = HBnBFacade()
 api = Namespace('reviews', description='Review operations')
 
 # Model for API documentation
@@ -21,36 +22,36 @@ class ReviewList(Resource):
     @api.marshal_list_with(review_model)
     def get(self):
         """Get all reviews"""
-        return hbnb_facade.get_all(Review), 200
+        return facade.get_all_reviews(), 200
 
     @api.expect(review_model)
     @api.marshal_with(review_model, code=201)
     def post(self):
         """Create a new review"""
         data = api.payload
-        
-        # Validate place exists
-        place = hbnb_facade.get(Place, data['place_id'])
+
+        place = facade.get_place(data['place_id'])
+        print(place)
         if not place:
             api.abort(400, "Place does not exist")
-            
-        # Validate user exists
-        user = hbnb_facade.get(User, data['user_id'])
+
+        user = facade.get_user(data['user_id'])
         if not user:
             api.abort(400, "User does not exist")
-        
+
         try:
-            review = hbnb_facade.create(Review, **data)
+            review = facade.create_review(data)
             return review, 201
         except ValueError as e:
             api.abort(400, str(e))
+
 
 @api.route('/<string:review_id>')
 class ReviewResource(Resource):
     @api.marshal_with(review_model)
     def get(self, review_id):
         """Get review by ID"""
-        review = hbnb_facade.get(Review, review_id)
+        review = HBnBFacade.get(Review, review_id)
         if not review:
             api.abort(404, "Review not found")
         return review, 200
@@ -60,30 +61,30 @@ class ReviewResource(Resource):
     def put(self, review_id):
         """Update review information"""
         data = api.payload
-        review = hbnb_facade.get(Review, review_id)
+        review = HBnBFacade.get(Review, review_id)
         if not review:
             api.abort(404, "Review not found")
             
         # Validate place if being updated
         if 'place_id' in data:
-            place = hbnb_facade.get(Place, data['place_id'])
+            place = HBnBFacade.get(Place, data['place_id'])
             if not place:
                 api.abort(400, "Place does not exist")
                 
         # Validate user if being updated
         if 'user_id' in data:
-            user = hbnb_facade.get(User, data['user_id'])
+            user = HBnBFacade.get(User, data['user_id'])
             if not user:
                 api.abort(400, "User does not exist")
         
         try:
-            updated_review = hbnb_facade.update(Review, review_id, **data)
+            updated_review = HBnBFacade.update_review(Review, review_id, **data)
             return updated_review, 200
         except ValueError as e:
             api.abort(400, str(e))
     
     def delete(self, review_id):
         """Delete a review"""
-        if not hbnb_facade.delete(Review, review_id):
+        if not HBnBFacade.delete_review(Review, review_id):
             api.abort(404, "Review not found")
         return {'message': 'Review deleted successfully'}, 200
