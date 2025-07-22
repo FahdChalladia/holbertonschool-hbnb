@@ -44,7 +44,7 @@ class PlaceList(Resource):
         """Register a new place"""
         data = api.payload
         try:
-            place = facade.create_place(data)
+            place = facade.create_place(place_data=data)
             return {
             "id":place.id,
             "title": place.title ,

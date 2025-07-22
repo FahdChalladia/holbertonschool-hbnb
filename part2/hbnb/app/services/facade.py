@@ -4,8 +4,6 @@ from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.review import Review
 
-from app.persistence.storage import storage
-
 class HBnBFacade:
     def __init__(self):
         self.user_repo = InMemoryRepository()
@@ -37,11 +35,13 @@ class HBnBFacade:
         return user
     
     def create_amenity(self, amenity_data):
-        if not amenity_data.get("name"): #####get by id 
+        name = amenity_data.get("name")
+        if not name:
             raise ValueError("Amenity name is required")
-        amenity = Amenity(**amenity_data)
+        amenity = Amenity(name)
         self.amenity_repo.add(amenity)
         return amenity
+
 
     def get_amenity(self, amenity_id):
         return self.amenity_repo.get(amenity_id)
@@ -56,11 +56,34 @@ class HBnBFacade:
         if 'name' in amenity_data:
             amenity.name = amenity_data['name']
         return amenity
+    def create_place(self, user_data):
+        user = User(**user_data)
+        self.user_repo.add(user)
+        return user
 
+    def get_place(self, user_id):
+        return self.user_repo.get(user_id)
+
+    def get_user_by_email(self, email):
+        return self.user_repo.get_by_attribute('email', email)
+
+    def get_all_users(self):
+        return self.user_repo.get_all()
+
+    def update_user(self, user_id, update_data):
+        user = self.user_repo.get(user_id)
+        if not user:
+            return None
+        for key, value in update_data.items():
+            if hasattr(user, key):
+                setattr(user, key, value)
+        return user
+    
     def create_place(self, place_data):
         try:
             place = Place(**place_data)
             self.place_repo.add(place)
+            print(self.place_repo)
             return place
         except ValueError as e:
             raise ValueError(str(e))
@@ -70,7 +93,7 @@ class HBnBFacade:
         if not place:
             return None
         return place
-
+    
     def get_all_places(self):
         return self.place_repo.get_all()
 
@@ -92,10 +115,11 @@ class HBnBFacade:
         return True
     
     def create_review(self, review_data):
-        text = review_data.get('text')
-        rating = review_data.get('rating')
-        user_id = review_data.get('user_id')
-        place_id = review_data.get('place_id')
+        review = Review(**review_data)
+        text = review.text
+        rating = review.rating
+        user_id = review.user_id
+        place_id = review.place_id
 
         if not all([text, rating, user_id, place_id]):
             raise ValueError("All fields (text, rating, user_id, place_id) are required")
@@ -104,6 +128,7 @@ class HBnBFacade:
             raise ValueError("Rating must be between 1 and 5")
 
         user = self.user_repo.get(user_id)
+        print(user)
         if not user:
             raise ValueError("User does not exist")
 
@@ -116,22 +141,22 @@ class HBnBFacade:
         return review
 
     def get_review(self, review_id):
-        review = Review.get(review_id)
+        review = self.review_repo.get(review_id)
         if not review:
             raise ValueError("Review not found")
         return review
 
     def get_all_reviews(self):
-        return Review.all()
+        return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        place = Place.get(place_id)
+        place = self.place_repo.get(place_id)
         if not place:
             raise ValueError("Place not found")
-        return [r for r in Review.all() if r.place_id == place_id]
+        return [r for r in self.review_repo.get_all() if r.place_id == place_id]
 
     def update_review(self, review_id, review_data):
-        review = Review.get(review_id)
+        review = self.review_repo.get(review_id)
         if not review:
             raise ValueError("Review not found")
 
@@ -139,17 +164,17 @@ class HBnBFacade:
         rating = review_data.get("rating")
 
         if text:
-            review.text = text
+            self.review_repo.text = text
         if rating:
             if not (1 <= rating <= 5):
                 raise ValueError("Rating must be between 1 and 5")
-            review.rating = rating
+            self.review_repo.rating = rating
 
-        review.save()
+        self.review_repo.save()
         return review
 
     def delete_review(self, review_id):
-        review = Review.get(review_id)
+        review = self.review_repo.get(review_id)
         if not review:
             raise ValueError("Review not found")
         review.delete()

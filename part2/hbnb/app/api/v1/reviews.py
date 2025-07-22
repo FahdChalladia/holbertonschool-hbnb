@@ -30,15 +30,6 @@ class ReviewList(Resource):
         """Create a new review"""
         data = api.payload
 
-        place = facade.get_place(data['place_id'])
-        print(place)
-        if not place:
-            api.abort(400, "Place does not exist")
-
-        user = facade.get_user(data['user_id'])
-        if not user:
-            api.abort(400, "User does not exist")
-
         try:
             review = facade.create_review(data)
             return review, 201
