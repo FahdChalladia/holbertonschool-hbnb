@@ -13,6 +13,7 @@ review_model = api.model('Review', {
     'place_id': fields.String(required=True, description='Place ID being reviewed'),
     'user_id': fields.String(required=True, description='User ID writing the review'),
     'text': fields.String(required=True, description='Review text content'),
+    'rating': fields.Integer(required=True),
     'created_at': fields.DateTime(readonly=True, description='Creation date'),
     'updated_at': fields.DateTime(readonly=True, description='Update date')
 })
