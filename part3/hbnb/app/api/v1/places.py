@@ -37,25 +37,29 @@ place_model = api.model('Place', {
 
 @api.route('/')
 class PlaceList(Resource):
+    @jwt_required()
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
-        """Register a new place"""
+        """Register a new place (Authenticated users only)"""
         data = api.payload
+        current_user = get_jwt_identity()
+
         try:
+            data['owner_id'] = current_user['id']
             place = facade.create_place(place_data=data)
             return {
-            "id":place.id,
-            "title": place.title ,
-            "description": place.description,
-            "price": place.price,
-            "latitude": place.latitude,
-            "longitude": place.longitude,
-            "owner_id": place.owner_id
+                "id": place.id,
+                "title": place.title,
+                "description": place.description,
+                "price": place.price,
+                "latitude": place.latitude,
+                "longitude": place.longitude,
+                "owner_id": place.owner_id
             }, 201
-        except ValueError as e:
-            return {'message': str(e)}, 400
+    except ValueError as e:
+        return {'message': str(e)}, 400
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
@@ -69,7 +73,7 @@ class PlaceList(Resource):
             "latitude": place.latitude,
             "longitude": place.longitude,
             "owner_id": place.owner_id
-            }for place in places], 200
+        }for place in places], 200
 
 
 
@@ -84,25 +88,34 @@ class PlaceResource(Resource):
             return {'message': 'Place not found'}, 404
         return place.to_dict(include_owner=True, include_amenities=True), 200
 
-    @api.expect(place_model)
-    @api.response(200, 'Place updated successfully')
-    @api.response(404, 'Place not found')
-    @api.response(400, 'Invalid input data')
-    def put(self, place_id):
-        """Update a place's information"""
-        data = api.payload
-        try:
-            place = facade.update_place(place_id, data)
-            if not place:
-                return {'message': 'Place not found'}, 404
-            return {'message': 'Place updated successfully'}, 200
-        except ValueError as e:
-            return {'message': str(e)}, 400
-    @api.response(204, 'Place deleted')
-    @api.response(404, 'Place not found')
-    def delete(self, place_id):
-        """Delete a place by ID"""
-        success = facade.delete_place(place_id)
-        if not success:
-            return {'message': 'Place not found'}, 404
-        return '', 204
+@jwt_required()
+@api.expect(place_model)
+@api.response(200, 'Place updated successfully')
+@api.response(403, 'Unauthorized action')
+@api.response(404, 'Place not found')
+@api.response(400, 'Invalid input data')
+def put(self, place_id):
+    """Update a place's information (owner only)"""
+    current_user = get_jwt_identity()
+    place = facade.get_place(place_id)
+
+    if not place:
+        return {'message': 'Place not found'}, 404
+
+    if place.owner_id != current_user['id']:
+        return {'error': 'Unauthorized action'}, 403
+
+    try:
+        updated_place = facade.update_place(place_id, api.payload)
+        return {'message': 'Place updated successfully'}, 200
+    except ValueError as e:
+        return {'message': str(e)}, 400
+
+@api.response(204, 'Place deleted')
+@api.response(404, 'Place not found')
+def delete(self, place_id):
+    """Delete a place by ID"""
+    success = facade.delete_place(place_id)
+    if not success:
+        return {'message': 'Place not found'}, 404
+    return '', 204

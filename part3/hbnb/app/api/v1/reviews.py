@@ -25,11 +25,33 @@ class ReviewList(Resource):
         """Get all reviews"""
         return facade.get_all_reviews(), 200
 
+    @jwt_required()
     @api.expect(review_model)
     @api.marshal_with(review_model, code=201)
     def post(self):
-        """Create a new review"""
+        """Create a new review (authenticated users only)"""
+        current_user = get_jwt_identity()
         data = api.payload
+        place_id = data.get('place_id')
+
+        if not place_id:
+            api.abort(400, "Place ID is required")
+
+        place = HBnBFacade.get(Place, place_id)
+        if not place:
+            api.abort(400, "Place does not exist")
+
+        # Prevent user from reviewing their own place
+        if place.owner_id == current_user['id']:
+            api.abort(400, "You cannot review your own place")
+
+        # Prevent duplicate review
+        existing_reviews = facade.get_reviews_by_user_and_place(current_user['id'], place_id)
+        if existing_reviews:
+            api.abort(400, "You have already reviewed this place")
+
+        # Force user_id to current authenticated user
+        data['user_id'] = current_user['id']
 
         try:
             review = facade.create_review(data)
@@ -48,35 +70,47 @@ class ReviewResource(Resource):
             api.abort(404, "Review not found")
         return review, 200
 
+    @jwt_required()
     @api.expect(review_model)
     @api.marshal_with(review_model)
     def put(self, review_id):
-        """Update review information"""
-        data = api.payload
+        """Update review information (owner only)"""
+        current_user = get_jwt_identity()
         review = HBnBFacade.get(Review, review_id)
+
         if not review:
             api.abort(404, "Review not found")
-            
-        # Validate place if being updated
+
+        if review.user_id != current_user['id']:
+            api.abort(403, "Unauthorized action")
+
+        data = api.payload
+
+        # Optional validation
         if 'place_id' in data:
             place = HBnBFacade.get(Place, data['place_id'])
             if not place:
                 api.abort(400, "Place does not exist")
-                
-        # Validate user if being updated
-        if 'user_id' in data:
-            user = HBnBFacade.get(User, data['user_id'])
-            if not user:
-                api.abort(400, "User does not exist")
-        
+
         try:
             updated_review = HBnBFacade.update_review(Review, review_id, **data)
             return updated_review, 200
         except ValueError as e:
             api.abort(400, str(e))
     
+    @jwt_required()
     def delete(self, review_id):
-        """Delete a review"""
-        if not HBnBFacade.delete_review(Review, review_id):
+        """Delete a review (owner only)"""
+        current_user = get_jwt_identity()
+        review = HBnBFacade.get(Review, review_id)
+
+        if not review:
             api.abort(404, "Review not found")
-        return {'message': 'Review deleted successfully'}, 200
+
+        if review.user_id != current_user['id']:
+            api.abort(403, "Unauthorized action")
+
+        if not HBnBFacade.delete_review(Review, review_id):
+            api.abort(400, "Failed to delete review")
+
+            return {'message': 'Review deleted successfully'}, 200
