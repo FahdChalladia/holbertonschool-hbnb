@@ -5,7 +5,7 @@ from app.models.amenity import Amenity
 from app.models.review import Review
 
 class HBnBFacade:
-    def _init_(self):
+    def __init__(self):
         self.user_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
         self.place_repo=InMemoryRepository()
