@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-
+from flask_jwt_extended import jwt_required, get_jwt_identity
 api = Namespace('places', description='Place operations')
 
 # Models
@@ -58,8 +58,8 @@ class PlaceList(Resource):
                 "longitude": place.longitude,
                 "owner_id": place.owner_id
             }, 201
-    except ValueError as e:
-        return {'message': str(e)}, 400
+        except ValueError as e:
+            return {'message': str(e)}, 400 
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):

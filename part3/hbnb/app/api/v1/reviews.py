@@ -4,6 +4,7 @@ from app.models.review import Review
 from app.services import facade
 from app.models.place import Place
 from app.models.user import User
+from flask_jwt_extended import jwt_required, get_jwt_identity
 facade = HBnBFacade()
 api = Namespace('reviews', description='Review operations')
 
