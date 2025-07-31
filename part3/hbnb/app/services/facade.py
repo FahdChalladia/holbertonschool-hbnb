@@ -5,19 +5,18 @@ from app.models.amenity import Amenity
 from app.models.review import Review
 
 class HBnBFacade:
-    def __init__(self):
+    def _init_(self):
         self.user_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
         self.place_repo=InMemoryRepository()
         self.review_repo=InMemoryRepository()
 
     def create_user(self, first_name, last_name, email, password, is_admin=False):
-    # Nouvelle version avec paramètres séparés
         new_user = User(
             first_name=first_name,
             last_name=last_name,
             email=email,
-            password=password,  # Mot de passe en clair
+            password=password,
             is_admin=is_admin
         )
         self.user_repo.add(new_user)
