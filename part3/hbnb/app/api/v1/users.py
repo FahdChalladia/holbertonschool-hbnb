@@ -24,8 +24,14 @@ class UserList(Resource):
         existing_user = facade.get_user_by_email(user_data['email'])
         if existing_user:
             return {'error': 'Email already registered'}, 400
-        user_data['password'] = bcrypt.generate_password_hash(user_data['password']).decode('utf-8')
-        new_user = facade.create_user(user_data)
+
+        new_user = facade.create_user(
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name'],
+            email=user_data['email'],
+            password=user_data['password'],  # EN CLAIR
+            is_admin=False
+        )
         return {
             'id': new_user.id,
             'first_name': new_user.first_name,

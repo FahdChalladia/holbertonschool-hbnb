@@ -11,10 +11,17 @@ class HBnBFacade:
         self.place_repo=InMemoryRepository()
         self.review_repo=InMemoryRepository()
 
-    def create_user(self, user_data):
-        user = User(**user_data)
-        self.user_repo.add(user)
-        return user
+    def create_user(self, first_name, last_name, email, password, is_admin=False):
+    # Nouvelle version avec paramètres séparés
+        new_user = User(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=password,  # Mot de passe en clair
+            is_admin=is_admin
+        )
+        self.user_repo.add(new_user)
+        return new_user
 
     def get_user(self, user_id):
         return self.user_repo.get(user_id)
