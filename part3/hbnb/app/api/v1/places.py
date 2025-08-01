@@ -88,28 +88,28 @@ class PlaceResource(Resource):
             return {'message': 'Place not found'}, 404
         return place.to_dict(include_owner=True, include_amenities=True), 200
 
-@jwt_required()
-@api.expect(place_model)
-@api.response(200, 'Place updated successfully')
-@api.response(403, 'Unauthorized action')
-@api.response(404, 'Place not found')
-@api.response(400, 'Invalid input data')
-def put(self, place_id):
-    """Update a place's information (owner only)"""
-    current_user = get_jwt_identity()
-    place = facade.get_place(place_id)
+    @jwt_required()
+    @api.expect(place_model)
+    @api.response(200, 'Place updated successfully')
+    @api.response(403, 'Unauthorized action')
+    @api.response(404, 'Place not found')
+    @api.response(400, 'Invalid input data')
+    def put(self, place_id):
+        """Update a place's information (owner only)"""
+        current_user = get_jwt_identity()
+        place = facade.get_place(place_id)
 
-    if not place:
-        return {'message': 'Place not found'}, 404
+        if not place:
+            return {'message': 'Place not found'}, 404
 
-    if place.owner_id != current_user['id']:
-        return {'error': 'Unauthorized action'}, 403
+        if place.owner_id != current_user['id']:
+            return {'error': 'Unauthorized action'}, 403
 
-    try:
-        updated_place = facade.update_place(place_id, api.payload)
-        return {'message': 'Place updated successfully'}, 200
-    except ValueError as e:
-        return {'message': str(e)}, 400
+        try:
+            updated_place = facade.update_place(place_id, api.payload)
+            return {'message': 'Place updated successfully'}, 200
+        except ValueError as e:
+            return {'message': str(e)}, 400
 
 @api.response(204, 'Place deleted')
 @api.response(404, 'Place not found')

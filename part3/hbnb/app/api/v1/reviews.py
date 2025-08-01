@@ -30,35 +30,42 @@ class ReviewList(Resource):
     @api.expect(review_model)
     @api.marshal_with(review_model, code=201)
     def post(self):
-        """Create a new review (authenticated users only)"""
+        """Create a new review (only once per place, not on own place)"""
         current_user = get_jwt_identity()
         data = api.payload
-        place_id = data.get('place_id')
 
-        if not place_id:
-            api.abort(400, "Place ID is required")
+        place_id = data.get("place_id")
+        text = data.get("text")
+        rating = data.get("rating")
 
-        place = HBnBFacade.get(Place, place_id)
+        if not place_id or not text or rating is None:
+            return {"error": "Missing fields"}, 400
+
+        place = facade.get_place(place_id)
         if not place:
-            api.abort(400, "Place does not exist")
+            return {"error": "Place not found"}, 404
 
-        # Prevent user from reviewing their own place
+        # Vérifie que l'utilisateur ne review pas son propre lieu
         if place.owner_id == current_user['id']:
-            api.abort(400, "You cannot review your own place")
+            return {"error": "You cannot review your own place"}, 400
 
-        # Prevent duplicate review
-        existing_reviews = facade.get_reviews_by_user_and_place(current_user['id'], place_id)
-        if existing_reviews:
-            api.abort(400, "You have already reviewed this place")
-
-        # Force user_id to current authenticated user
-        data['user_id'] = current_user['id']
+        # Vérifie que l'utilisateur n'a pas déjà laissé une review pour ce lieu
+        existing_reviews = facade.get_reviews_by_place(place_id)
+        for r in existing_reviews:
+            if r.user_id == current_user['id']:
+                return {"error": "You have already reviewed this place"}, 400
 
         try:
-            review = facade.create_review(data)
-            return review, 201
-        except ValueError as e:
-            api.abort(400, str(e))
+            review_data = {
+                "text": text,
+                "rating": rating,
+                "place_id": place_id,
+                "user_id": current_user['id']
+            }
+            new_review = facade.create_review(review_data)
+            return new_review, 201
+        except Exception as e:
+            return {"error": str(e)}, 400
 
 
 @api.route('/<string:review_id>')
@@ -75,9 +82,9 @@ class ReviewResource(Resource):
     @api.expect(review_model)
     @api.marshal_with(review_model)
     def put(self, review_id):
-        """Update review information (owner only)"""
+        """Update a review (only if user is the author)"""
         current_user = get_jwt_identity()
-        review = HBnBFacade.get(Review, review_id)
+        review = facade.get_review(review_id)
 
         if not review:
             api.abort(404, "Review not found")
@@ -87,23 +94,17 @@ class ReviewResource(Resource):
 
         data = api.payload
 
-        # Optional validation
-        if 'place_id' in data:
-            place = HBnBFacade.get(Place, data['place_id'])
-            if not place:
-                api.abort(400, "Place does not exist")
-
         try:
-            updated_review = HBnBFacade.update_review(Review, review_id, **data)
-            return updated_review, 200
+            updated_review = facade.update_review(review_id, data)
+            return updated_review
         except ValueError as e:
             api.abort(400, str(e))
     
     @jwt_required()
     def delete(self, review_id):
-        """Delete a review (owner only)"""
+        """Delete a review (only if user is the author)"""
         current_user = get_jwt_identity()
-        review = HBnBFacade.get(Review, review_id)
+        review = facade.get_review(review_id)
 
         if not review:
             api.abort(404, "Review not found")
@@ -111,7 +112,8 @@ class ReviewResource(Resource):
         if review.user_id != current_user['id']:
             api.abort(403, "Unauthorized action")
 
-        if not HBnBFacade.delete_review(Review, review_id):
-            api.abort(400, "Failed to delete review")
-
-            return {'message': 'Review deleted successfully'}, 200
+        try:
+            facade.delete_review(review_id)
+            return {"message": "Review deleted successfully"}, 200
+        except Exception as e:
+            api.abort(400, str(e))

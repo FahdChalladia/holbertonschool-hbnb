@@ -62,11 +62,7 @@ class HBnBFacade:
         if 'name' in amenity_data:
             amenity.name = amenity_data['name']
         return amenity
-    def create_place(self, user_data):
-        user = User(**user_data)
-        self.user_repo.add(user)
-        return user
-
+        
     def get_place(self, user_id):
         return self.user_repo.get(user_id)
 

@@ -69,17 +69,23 @@ class UserResource(Resource):
     @api.expect(user_model, validate=True)
     @api.response(200, 'User updated')
     @api.response(404, 'User not found')
+    @jwt_required()
     def put(self, user_id):
-        """Update user by ID"""
-        updated_user = facade.update_user(user_id, api.payload)
+        current_user_id = get_jwt_identity()
+        if current_user_id != user_id:
+            return {"error": "Unauthorized action"}, 403
+
+        data = request.get_json()
+
+        # Interdire modification de email ou password
+        if "email" in data or "password" in data:
+            return {"error": "You cannot modify email or password"}, 400
+
+        updated_user = facade.update_user(user_id, data)
         if not updated_user:
-            return {'error': 'User not found'}, 404
-        return {
-            'id': updated_user.id,
-            'first_name': updated_user.first_name,
-            'last_name': updated_user.last_name,
-            'email': updated_user.email
-        }, 200
+            return {"error": "User not found"}, 404
+
+        return updated_user.to_dict(), 200
 
 @api.route('/protected')
 class ProtectedResource(Resource):
