@@ -112,6 +112,16 @@ class PlaceResource(Resource):
         except ValueError as e:
             return {'message': str(e)}, 400
 
+        if not is_admin and place.owner_id != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        data = request.json
+        updated_place = facade.update_place(place_id, data)
+        if not updated_place:
+            return {'error': 'Update failed'}, 400
+
+        return updated_place, 200
+
 @api.response(204, 'Place deleted')
 @api.response(404, 'Place not found')
 def delete(self, place_id):

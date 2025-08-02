@@ -97,6 +97,16 @@ class ReviewResource(Resource):
             return updated_review
         except ValueError as e:
             api.abort(400, str(e))
+
+        if not is_admin and review.user_id != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        data = request.json
+        updated_review = facade.update_review(review_id, data)
+        if not updated_review:
+            return {'error': 'Update failed'}, 400
+
+        return updated_review, 200
     
     @jwt_required()
     def delete(self, review_id):

@@ -51,6 +51,7 @@ class UserList(Resource):
         } for user in users], 200
 
 @api.route('/<user_id>')
+@api.route('/<string:user_id>')
 class UserResource(Resource):
     @api.response(200, 'User retrieved')
     @api.response(404, 'User not found')
@@ -66,20 +67,29 @@ class UserResource(Resource):
             'email': user.email
         }, 200
 
-    @api.expect(user_model, validate=True)
-    @api.response(200, 'User updated')
-    @api.response(404, 'User not found')
     @jwt_required()
     def put(self, user_id):
-        current_user_id = get_jwt_identity()
-        if current_user_id != user_id:
+        current_user_id = get_jwt_identity()  # c’est une string !
+        is_admin = False  # par défaut
+
+        # Optionnel : tu peux retrouver l'objet User
+        current_user = facade.get_user(current_user_id)
+        if current_user and getattr(current_user, "is_admin", False):
+            is_admin = True
+
+        # Vérifie droits
+        if not is_admin and current_user_id != user_id:
             return {"error": "Unauthorized action"}, 403
 
         data = request.get_json()
 
-        # Interdire modification de email ou password
-        if "email" in data or "password" in data:
+        if not is_admin and ("email" in data or "password" in data):
             return {"error": "You cannot modify email or password"}, 400
+
+        if is_admin and "email" in data:
+            existing_user = facade.get_user_by_email(data["email"])
+            if existing_user and existing_user.id != user_id:
+                return {'error': 'Email is already in use'}, 400
 
         updated_user = facade.update_user(user_id, data)
         if not updated_user:
@@ -87,9 +97,27 @@ class UserResource(Resource):
 
         return updated_user.to_dict(), 200
 
-@api.route('/protected')
-class ProtectedResource(Resource):
+@api.route('/')
+class AdminUserCreate(Resource):
     @jwt_required()
-    def get(self):
+    def post(self):
         current_user = get_jwt_identity()
-        return {'message': f'Hello, user {current_user["id"]}'}, 200
+        if not current_user.get('is_admin', False):
+            return {'error': 'Admin privileges required'}, 403
+
+        user_data = request.json
+        email = user_data.get('email')
+        password = user_data.get('password')
+
+        if not email or not password:
+            return {'error': 'Email and password are required'}, 400
+
+        if facade.get_user_by_email(email):
+            return {'error': 'Email already registered'}, 400
+
+        # Créer le nouvel utilisateur via la facade
+        try:
+            new_user = facade.create_user(user_data)
+            return new_user, 201
+        except Exception as e:
+            return {'error': str(e)}, 400
