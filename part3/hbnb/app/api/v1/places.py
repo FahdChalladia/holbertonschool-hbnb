@@ -44,10 +44,10 @@ class PlaceList(Resource):
     def post(self):
         """Register a new place (Authenticated users only)"""
         data = api.payload
-        current_user = get_jwt_identity()
+        user_id = get_jwt_identity()
 
         try:
-            data['owner_id'] = current_user['id']
+            data["owner_id"] = user_id
             place = facade.create_place(place_data=data)
             return {
                 "id": place.id,
@@ -102,7 +102,8 @@ class PlaceResource(Resource):
         if not place:
             return {'message': 'Place not found'}, 404
 
-        if place.owner_id != current_user['id']:
+        current_user_id = get_jwt_identity()
+        if place.owner_id != current_user_id:
             return {'error': 'Unauthorized action'}, 403
 
         try:

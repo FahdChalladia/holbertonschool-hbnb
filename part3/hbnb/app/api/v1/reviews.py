@@ -5,8 +5,9 @@ from app.services import facade
 from app.models.place import Place
 from app.models.user import User
 from flask_jwt_extended import jwt_required, get_jwt_identity
-facade = HBnBFacade()
-api = Namespace('reviews', description='Review operations')
+from app.services import facade
+
+api = Namespace('reviews', path='/api/v1/reviews', description='Review operations')
 
 # Model for API documentation
 review_model = api.model('Review', {
@@ -28,10 +29,9 @@ class ReviewList(Resource):
 
     @jwt_required()
     @api.expect(review_model)
-    @api.marshal_with(review_model, code=201)
     def post(self):
         """Create a new review (only once per place, not on own place)"""
-        current_user = get_jwt_identity()
+        user_id = get_jwt_identity()
         data = api.payload
 
         place_id = data.get("place_id")
@@ -45,14 +45,12 @@ class ReviewList(Resource):
         if not place:
             return {"error": "Place not found"}, 404
 
-        # Vérifie que l'utilisateur ne review pas son propre lieu
-        if place.owner_id == current_user['id']:
+        if place.owner_id == user_id:
             return {"error": "You cannot review your own place"}, 400
 
-        # Vérifie que l'utilisateur n'a pas déjà laissé une review pour ce lieu
         existing_reviews = facade.get_reviews_by_place(place_id)
         for r in existing_reviews:
-            if r.user_id == current_user['id']:
+            if r.user_id == user_id:
                 return {"error": "You have already reviewed this place"}, 400
 
         try:
@@ -60,10 +58,10 @@ class ReviewList(Resource):
                 "text": text,
                 "rating": rating,
                 "place_id": place_id,
-                "user_id": current_user['id']
+                "user_id": user_id
             }
             new_review = facade.create_review(review_data)
-            return new_review, 201
+            return new_review.to_dict(), 201
         except Exception as e:
             return {"error": str(e)}, 400
 
@@ -76,20 +74,20 @@ class ReviewResource(Resource):
         review = HBnBFacade.get(Review, review_id)
         if not review:
             api.abort(404, "Review not found")
-        return review, 200
+        return review.to_dict(), 200
 
     @jwt_required()
     @api.expect(review_model)
     @api.marshal_with(review_model)
     def put(self, review_id):
         """Update a review (only if user is the author)"""
-        current_user = get_jwt_identity()
+        user_id = get_jwt_identity()
         review = facade.get_review(review_id)
 
         if not review:
             api.abort(404, "Review not found")
 
-        if review.user_id != current_user['id']:
+        if review.user_id != user_id:
             api.abort(403, "Unauthorized action")
 
         data = api.payload
@@ -103,13 +101,13 @@ class ReviewResource(Resource):
     @jwt_required()
     def delete(self, review_id):
         """Delete a review (only if user is the author)"""
-        current_user = get_jwt_identity()
+        user_id = get_jwt_identity()
         review = facade.get_review(review_id)
 
         if not review:
             api.abort(404, "Review not found")
 
-        if review.user_id != current_user['id']:
+        if review.user_id != user_id:
             api.abort(403, "Unauthorized action")
 
         try:

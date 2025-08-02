@@ -4,6 +4,7 @@ from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.review import Review
 
+
 class HBnBFacade:
     def __init__(self):
         self.user_repo = InMemoryRepository()
@@ -100,6 +101,7 @@ class HBnBFacade:
         return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
+        from app.models import storage
         place = self.place_repo.get(place_id)
         if not place:
             return None
@@ -117,11 +119,10 @@ class HBnBFacade:
         return True
     
     def create_review(self, review_data):
-        review = Review(**review_data)
-        text = review.text
-        rating = review.rating
-        user_id = review.user_id
-        place_id = review.place_id
+        text = review_data.get("text")
+        rating = review_data.get("rating")
+        user_id = review_data.get("user_id")
+        place_id = review_data.get("place_id")
 
         if not all([text, rating, user_id, place_id]):
             raise ValueError("All fields (text, rating, user_id, place_id) are required")
@@ -166,11 +167,11 @@ class HBnBFacade:
         rating = review_data.get("rating")
 
         if text:
-            self.review_repo.text = text
+            review.text = text
         if rating:
             if not (1 <= rating <= 5):
                 raise ValueError("Rating must be between 1 and 5")
-            self.review_repo.rating = rating
+            review.rating = rating
 
         self.review_repo.save()
         return review
