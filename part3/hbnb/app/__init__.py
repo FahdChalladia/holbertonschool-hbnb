@@ -8,13 +8,12 @@ from app.api.v1.auth import api as auth
 from flask_bcrypt import Bcrypt
 from app.extensions import bcrypt
 from flask_jwt_extended import JWTManager
-from app.persistence import storage
-from flask_sqlalchemy import SQLAlchemy
+from app.extensions import db, bcrypt, jwt
+from app.persistence import storage  
 
 
 bcrypt = Bcrypt()
 jwt = JWTManager()
-db = SQLAlchemy()
 
 def create_app(config_class="config.DevelopmentConfig"):
     app = Flask(__name__)
