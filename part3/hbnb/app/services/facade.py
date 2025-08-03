@@ -41,14 +41,12 @@ class HBnBFacade:
                 setattr(user, key, value)
         return user
     
-    def create_amenity(self, amenity_data):
-        name = amenity_data.get("name")
-        if not name:
-            raise ValueError("Amenity name is required")
-        amenity = Amenity(name)
+    def create_amenity(self, name):
+        amenity = Amenity(
+            name=name
+        )
         self.amenity_repo.add(amenity)
         return amenity
-
 
     def get_amenity(self, amenity_id):
         return self.amenity_repo.get(amenity_id)

@@ -80,7 +80,6 @@ class AdminUserCreate(Resource):
         users = facade.get_all_users()
         if not users:
             new_user = api.payload
-            print()
             if new_user.get('is_admin')==False:
                 return {'error': 'First user must be admin'}, 400
             new_user = facade.create_user(
