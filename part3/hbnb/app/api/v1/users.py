@@ -28,6 +28,7 @@ class UserList(Resource):
 
 @api.route('/<user_id>')
 @api.route('/<string:user_id>')
+@api.response(404, 'User not found')
 class UserResource(Resource):
     @api.response(200, 'User retrieved')
     @api.response(404, 'User not found')

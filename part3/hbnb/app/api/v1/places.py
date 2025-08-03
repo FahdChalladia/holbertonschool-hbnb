@@ -29,7 +29,6 @@ place_model = api.model('Place', {
     'price': fields.Float(required=True, description='Price per night'),
     'latitude': fields.Float(required=True, description='Latitude of the place'),
     'longitude': fields.Float(required=True, description='Longitude of the place'),
-    'owner_id': fields.String(required=True, description='ID of the owner'),
     'owner': fields.Nested(user_model, description='Owner of the place'),
     'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities'),
     'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
@@ -44,10 +43,10 @@ class PlaceList(Resource):
     def post(self):
         """Register a new place (Authenticated users only)"""
         data = api.payload
-        user_id = get_jwt_identity()
-
+        current_user= get_jwt_identity()
+        user_id = current_user.get('id')
+        data["owner_id"]= user_id
         try:
-            data["owner_id"] = user_id
             place = facade.create_place(place_data=data)
             return {
                 "id": place.id,
@@ -56,7 +55,7 @@ class PlaceList(Resource):
                 "price": place.price,
                 "latitude": place.latitude,
                 "longitude": place.longitude,
-                "owner_id": place.owner_id
+                "owner_id": user_id
             }, 201
         except ValueError as e:
             return {'message': str(e)}, 400 
@@ -88,7 +87,7 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'message': 'Place not found'}, 404
-        return place.to_dict(include_owner=True, include_amenities=True), 200
+        return place.to_dict(include_owner=True), 200
 
     
     @api.expect(place_model)

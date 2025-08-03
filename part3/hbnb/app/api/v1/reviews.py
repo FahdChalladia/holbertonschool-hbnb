@@ -92,8 +92,12 @@ class ReviewResource(Resource):
     @api.response(400, 'Invalid input data')
     def put(self, review_id):
         current_user = get_jwt_identity()
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
+        is_admin = current_user.get('is_admin')
+        user_id = current_user.get('id')
+
+        review = facade.get_review(review_id)
+        if not is_admin and review.user_id != user_id:
+            return {'error': 'Unauthorized action'}, 403
         data = api.payload
         data["user_id"]=current_user.get("id")
         try:

@@ -5,13 +5,16 @@ from app.models.amenity import Amenity
 from app.models.review import Review
 from app.persistence.repository import SQLAlchemyRepository
 from app.persistence.user_repository import UserRepository
+from app.persistence.review_repository import ReviewRepository
+from app.persistence.amenity_repository import AmenityRepository
+from app.persistence.place_repository import PlaceRepository
 
 class HBnBFacade:
     def __init__(self):
         self.user_repo = UserRepository()
-        self.amenity_repo = SQLAlchemyRepository(Amenity)
-        self.place_repo=SQLAlchemyRepository(Place)
-        self.review_repo=SQLAlchemyRepository(Review)
+        self.amenity_repo = AmenityRepository()
+        self.place_repo=PlaceRepository()
+        self.review_repo=ReviewRepository()
 
     def create_user(self, first_name, last_name, email, password, is_admin):
         new_user = User(
@@ -34,12 +37,14 @@ class HBnBFacade:
         return self.user_repo.get_all()
 
     def update_user(self, user_id, update_data):
+        from app.extensions import db
         user = self.user_repo.get(user_id)
         if not user:
             return None
         for key, value in update_data.items():
             if hasattr(user, key):
                 setattr(user, key, value)
+        db.session.commit() 
         return user
     
     def create_amenity(self, name):
@@ -56,11 +61,13 @@ class HBnBFacade:
         return self.amenity_repo.get_all()
 
     def update_amenity(self, amenity_id, amenity_data):
+        from app.extensions import db
         amenity = self.amenity_repo.get(amenity_id)
         if not amenity:
             return None
         if 'name' in amenity_data:
             amenity.name = amenity_data['name']
+        db.session.commit() 
         return amenity
         
     def get_place(self, user_id):
@@ -73,12 +80,14 @@ class HBnBFacade:
         return self.user_repo.get_all()
 
     def update_user(self, user_id, update_data):
+        from app.extensions import db
         user = self.user_repo.get(user_id)
         if not user:
             return None
         for key, value in update_data.items():
             if hasattr(user, key):
                 setattr(user, key, value)
+        db.session.commit() 
         return user
     
     def create_place(self, place_data):
@@ -100,14 +109,14 @@ class HBnBFacade:
         return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
-        from app.models import storage
+        from app.extensions import db
         place = self.place_repo.get(place_id)
         if not place:
             return None
         for key, value in place_data.items():
             if hasattr(place, key):
                 setattr(place, key, value)
-        storage.save()
+        db.session.commit() 
         return place
     
     def delete_place(self, place_id):
@@ -157,6 +166,7 @@ class HBnBFacade:
         return [r for r in self.review_repo.get_all() if r.place_id == place_id]
 
     def update_review(self, review_id, review_data):
+        from app.extensions import db
         review = self.review_repo.get(review_id)
         if not review:
             raise ValueError("Review not found")
@@ -170,8 +180,7 @@ class HBnBFacade:
             if not (1 <= rating <= 5):
                 raise ValueError("Rating must be between 1 and 5")
             review.rating = rating
-
-        self.review_repo.save()
+        db.session.commit() 
         return review
 
     def delete_review(self, review_id):
