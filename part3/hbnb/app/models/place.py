@@ -1,10 +1,11 @@
 import re
-from app.extensions import db
-from app.models.base_model import BaseModel
-from sqlalchemy.orm import validates
+from app.models.base_model import BaseModel , db , Base
+from sqlalchemy.orm import validates ,relationship
 
 class Place(BaseModel):
     __tablename__ = 'places'
+
+    
 
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, default="")
@@ -12,6 +13,8 @@ class Place(BaseModel):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     owner_id = db.Column(db.String(60), db.ForeignKey('users.id'), nullable=False)
+    owner = relationship('User', back_populates='places')
+    reviews = relationship("Review", back_populates="place", cascade="all, delete-orphan")
 
     def __init__(self, title, description, price, latitude, longitude, owner_id):
         self.title = title

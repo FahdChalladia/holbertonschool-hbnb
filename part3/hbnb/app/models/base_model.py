@@ -1,6 +1,9 @@
 import uuid
 from datetime import datetime
 from app.extensions import db
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
 
 class BaseModel(db.Model):
     __abstract__ = True

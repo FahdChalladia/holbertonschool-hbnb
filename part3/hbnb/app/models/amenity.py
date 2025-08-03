@@ -1,13 +1,11 @@
 import re
-from app.extensions import db
-from sqlalchemy.orm import validates
-from app.models.base_model import BaseModel
+from sqlalchemy.orm import validates , relationship
+from app.models.base_model import BaseModel ,db 
 
 class Amenity(BaseModel):
     __tablename__ = 'amenities'
 
     name = db.Column(db.String(50), nullable=False, unique=True)
-
     def __init__(self, name):
         self.name = name
 

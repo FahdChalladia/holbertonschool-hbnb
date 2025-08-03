@@ -1,7 +1,9 @@
 import re
 from app.extensions import bcrypt , db
 from app.models.base_model import BaseModel
-from sqlalchemy.orm import validates
+from sqlalchemy import Column, String, ForeignKey, Integer
+from sqlalchemy.orm import validates ,relationship
+
 
 class User(BaseModel):
     __tablename__ = 'users'
@@ -11,6 +13,9 @@ class User(BaseModel):
     email = db.Column(db.String(120), nullable=False, unique=True)
     password = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
+    places = relationship('Place', back_populates='owner')
+    reviews = relationship("Review", back_populates="author")
+    
     def __init__(self, first_name, last_name, email, password , is_admin):
         self.first_name = first_name
         self.last_name = last_name
