@@ -42,7 +42,7 @@ class UserResource(Resource):
             'last_name': user.last_name,
             'email': user.email
         }, 200
-
+    @api.response(404, 'error , Admin privileges required')
     @jwt_required()
     def put(self, user_id):
         current_user = get_jwt_identity()

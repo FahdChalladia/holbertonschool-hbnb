@@ -122,14 +122,13 @@ class HBnBFacade:
         user_id = review_data.get("user_id")
         place_id = review_data.get("place_id")
 
-        if not all([text, rating, user_id, place_id]):
-            raise ValueError("All fields (text, rating, user_id, place_id) are required")
+        if not all([text, rating, place_id]):
+            raise ValueError("All fields (text, rating, place_id) are required")
 
         if not (1 <= rating <= 5):
             raise ValueError("Rating must be between 1 and 5")
 
         user = self.user_repo.get(user_id)
-        print(user)
         if not user:
             raise ValueError("User does not exist")
 
@@ -144,7 +143,7 @@ class HBnBFacade:
     def get_review(self, review_id):
         review = self.review_repo.get(review_id)
         if not review:
-            raise ValueError("Review not found")
+            return None
         return review
 
     def get_all_reviews(self):
@@ -178,5 +177,5 @@ class HBnBFacade:
         review = self.review_repo.get(review_id)
         if not review:
             raise ValueError("Review not found")
-        review.delete()
+        self.review_repo.delete(review_id)
         return True
