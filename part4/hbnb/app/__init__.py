@@ -39,12 +39,15 @@ def create_app(config_class="config.DevelopmentConfig"):
     @app.route('/login')
     def login():
         return render_template('login.html')
-        access_token = create_access_token(identity=user.id)
-        response = jsonify({"msg": "Login successful"})
-        set_access_cookies(response, access_token)
-        return response
     @app.route('/places')
     def index():
         return render_template('index.html')
+    @app.route('/place')
+    def places():
+        return render_template('place.html')
+
+    @app.route('/add_review')
+    def add_review():
+        return render_template('add_review.html')
 
     return app

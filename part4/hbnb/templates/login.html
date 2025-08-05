@@ -12,10 +12,10 @@
         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Application Logo" class="logo">
         
         <nav>
-            <a href="index.html"class="login-button">Home</a>
-            <a href="place.html"class="login-button">Places</a>
-            <a href="add_review.html"class="login-button">Review</a>
-            <a href="login.html" class="login-button">Login</a>
+            <a href="{{ url_for('index') }}" class="login-button">Home</a>
+            <a href="{{ url_for('places') }}" class="login-button">Places</a>
+            <a href="{{ url_for('add_review') }}" class="login-button">Review</a>
+            <a href="{{ url_for('login') }}" class="login-button">Login</a>
         </nav>
     </header>
     <main>
