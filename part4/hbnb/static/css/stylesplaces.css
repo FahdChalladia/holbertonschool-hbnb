@@ -1,0 +1,148 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: #f4f4f4;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 30px;
+  background-color: #f5f5f5;
+}
+.logo {
+  height: 50px;
+}
+
+nav {
+  display: flex;
+  gap: 20px;
+}
+
+.login-button {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #ddd;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  background-color: #f1f1f1;
+  padding: 10px 0;
+  z-index: 100;
+}
+
+.footer-text {
+  font-size: 14px;
+  color: #333;
+}
+
+#places-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  max-width: 1000px;
+  margin: 0 auto;
+  gap: 30px;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.place-card {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.place-card:hover {
+  transform: translateY(-5px);
+}
+
+.place-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.details-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: none;
+  background-color: #ff6f61;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.details-button:hover {
+  background-color: #e75c50;
+}
+
+main {
+  padding: 2rem;
+  text-align: center;
+}
+
+main p {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+#filter {
+  margin-bottom: 30px;
+}
+
+.title {
+  font-size: 36px;
+  text-align: center;
+  margin: 30px 0;
+}
+
+.details-box {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto 40px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.details-box p {
+  margin: 10px 0;
+  font-size: 18px;
+}
+
+.details-box p strong {
+  font-weight: bold;
+}

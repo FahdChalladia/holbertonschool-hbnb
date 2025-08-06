@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styleslogin.css') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png') }}">
 </head>
 <body>
@@ -17,6 +17,7 @@
         </nav>
     </header>
     <main>
+        <div class="form-container">
         <form id="login-form">
             <h2>Login</h2>
             <label for="email">Email:</label>
@@ -27,8 +28,9 @@
             
             <button type="submit">Login</button>
         </form>
+        </div>
     </main>
-    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/scriptlogin.js') }}"></script>
     <footer>
         <p class="footer-text">© 2025 HBnB Evolution . All rights reserved.</p>
     </footer>
