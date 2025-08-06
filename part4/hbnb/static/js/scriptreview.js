@@ -180,15 +180,27 @@ async function submitReview(token, placeId) {
             body: JSON.stringify({ place_id: placeId, rating, text })
         });
 
+        const contentType = response.headers.get('Content-Type');
+
         if (!response.ok) {
-            const error = await response.text();
-            console.error('Error:', error);
+            let errorMessage = 'Unknown error occurred';
+
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                errorMessage = errorData.error || JSON.stringify(errorData);
+            } else {
+                errorMessage = await response.text();
+            }
+
+            alert(`Error ${response.status}: ${errorMessage}`);
+            console.error('Error:', errorMessage);
         } else {
             const result = await response.json();
-            console.log('Review posted successfully:', result);
+            alert('Review posted successfully!');
             location.reload();
         }
     } catch (error) {
         console.error('Network error while posting review:', error);
+        alert('Network error while posting review');
     }
 }

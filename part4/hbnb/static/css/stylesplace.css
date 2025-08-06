@@ -130,8 +130,10 @@ main p {
 
 .review {
   background-color: white;
-  padding: 15px;
-  border-radius: 6px;
+  padding: 10px;
+  margin: 20px 0;
+  border: 1px solid #ddd;
+  border-radius: 10px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
 }
 
