@@ -46,8 +46,8 @@ def create_app(config_class="config.DevelopmentConfig"):
     def place_detail(place_id):
         return render_template('place.html')
 
-    @app.route('/add_review')
-    def add_review():
+    @app.route('/add_review/<string:place_id>')
+    def add_review(place_id):
         return render_template('add_review.html')
 
 
