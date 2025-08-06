@@ -33,12 +33,14 @@ class ReviewList(Resource):
     @api.response(400, 'Invalid input data')
     def post(self):
         """Create a new review (only once per place, not on own place)"""
-        user_id = get_jwt_identity()
+        current_user= get_jwt_identity()
+        user_id = current_user.get('id')
         data = api.payload
 
         place_id = data.get("place_id")
         text = data.get("text")
         rating = data.get("rating")
+        data["user_id"] = user_id
 
         if not place_id or not text or not rating :
             return {"error": "Missing fields"}, 400

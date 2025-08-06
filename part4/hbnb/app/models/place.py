@@ -48,7 +48,7 @@ class Place(BaseModel):
             raise ValueError("Longitude must be between -180 and 180.")
         return longitude
 
-    def to_dict(self, include_owner=False):
+    def to_dict(self, include_owner=False, include_reviews=False):
         data = {
             'id': self.id,
             'title': self.title,
@@ -62,5 +62,8 @@ class Place(BaseModel):
 
         if include_owner:
             data['owner'] = self.owner_id
+
+        if include_reviews:
+            data['reviews'] = [review.to_dict() for review in self.reviews]
 
         return data

@@ -87,7 +87,7 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'message': 'Place not found'}, 404
-        return place.to_dict(include_owner=True), 200
+        return place.to_dict(include_owner=True, include_reviews=True), 200
 
     
     @api.expect(place_model)

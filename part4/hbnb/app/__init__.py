@@ -42,12 +42,13 @@ def create_app(config_class="config.DevelopmentConfig"):
     @app.route('/places')
     def index():
         return render_template('index.html')
-    @app.route('/place')
-    def places():
+    @app.route('/place/<string:place_id>')
+    def place_detail(place_id):
         return render_template('place.html')
 
     @app.route('/add_review')
     def add_review():
         return render_template('add_review.html')
+
 
     return app

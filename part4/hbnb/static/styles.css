@@ -1,40 +1,19 @@
-/* 
-  This is a SAMPLE File to get you started. Follow the instructions on the project to complete the tasks. 
-  You'll probably need to override some of theese styles.
-*/
-
+/* === Global Reset & Typography === */
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
 }
 
 body {
-    background-color: #f4f4f4;
-    color: #333;
-}
-
-main {
-    padding: 2rem;
-}
-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  background-color: #f1f1f1;
-  padding: 10px 0;
-  z-index: 100;
-}
-
-.footer-text {
-  margin: 0;
-  font-size: 14px;
+  background-color: #f4f4f4;
   color: #333;
+  margin: 0;
+  padding: 0;
 }
 
+/* === Header & Footer === */
 header {
   display: flex;
   justify-content: space-between;
@@ -44,7 +23,7 @@ header {
 }
 
 .logo {
-  height: 50px; /* adjust if needed */
+  height: 50px;
 }
 
 nav {
@@ -64,6 +43,24 @@ nav {
 .login-button:hover {
   background-color: #ddd;
 }
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  background-color: #f1f1f1;
+  padding: 10px 0;
+  z-index: 100;
+}
+
+.footer-text {
+  font-size: 14px;
+  color: #333;
+}
+
+/* === Homepage Places List === */
 #places-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -78,7 +75,7 @@ nav {
   background-color: #f9f9f9;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   text-align: center;
   transition: transform 0.2s ease;
 }
@@ -105,9 +102,11 @@ nav {
 .details-button:hover {
   background-color: #e75c50;
 }
+
+/* === Main Content Wrapper === */
 main {
+  padding: 2rem;
   text-align: center;
-  margin-top: 40px;
 }
 
 main p {
@@ -118,4 +117,65 @@ main p {
 
 #filter {
   margin-bottom: 30px;
+}
+
+/* === Place Page Specific === */
+.title {
+  font-size: 36px;
+  text-align: center;
+  margin: 30px 0;
+}
+
+.details-box {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto 40px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.details-box p {
+  margin: 10px 0;
+  font-size: 18px;
+}
+
+.details-box p strong {
+  font-weight: bold;
+}
+
+/* === Reviews Section === */
+#reviews-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 600px;
+  margin: 0 auto 100px auto;
+  width: 100%;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.review {
+  background-color: white;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+}
+
+.review p {
+  margin: 5px 0;
+}
+
+.review strong {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
