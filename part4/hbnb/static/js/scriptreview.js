@@ -96,7 +96,7 @@ async function displayPlaceDetails(place) {
     }
 
     const description = document.createElement('p');
-    description.textContent = place.description || 'No description available';
+    description.textContent = `Description: ${place.description || 'No description available'}`;
     detailsSection.appendChild(description);
 
     const price = document.createElement('p');
