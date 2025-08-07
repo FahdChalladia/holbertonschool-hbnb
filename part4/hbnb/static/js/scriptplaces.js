@@ -1,3 +1,12 @@
+if (document.getElementById('places-list')) 
+{
+    document.addEventListener('DOMContentLoaded', () => 
+    {
+        checkAuthentication();
+        document.getElementById('price-filter').addEventListener('change', handlePriceFilter);
+    });
+}
+
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -53,7 +62,6 @@ function displayPlaces(places) {
         placeCard.innerHTML = `
             <h2>${place.title || place.name}</h2>
             <p>Price: $${place.price_per_night || place.price}/night</p>
-            <p>${place.description || ''}</p>
             <button class="details-button" onclick="window.location.href='/place/${place.id}'">View Details</button>
         `;
 
@@ -68,12 +76,5 @@ function handlePriceFilter() {
     placeCards.forEach(card => {
         const price = parseFloat(card.getAttribute('data-price'));
         card.style.display = (selectedValue === 'all' || price <= parseFloat(selectedValue)) ? 'block' : 'none';
-    });
-}
-
-if (document.getElementById('places-list')) {
-    document.addEventListener('DOMContentLoaded', () => {
-        checkAuthentication();
-        document.getElementById('price-filter').addEventListener('change', handlePriceFilter);
     });
 }

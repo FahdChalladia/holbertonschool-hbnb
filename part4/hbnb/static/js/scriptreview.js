@@ -11,7 +11,7 @@ function getCookie(name) {
     return null;
 }
 
-function getPlaceIdFromURL() {
+function getPlaceIdFromURL() {  
     const pathParts = window.location.pathname.split('/');
     return pathParts[pathParts.length - 1];
 }
@@ -32,6 +32,7 @@ function initPlaceDetailsPage() {
         if (loginLink) loginLink.style.display = 'none';
         fetchPlaceDetails(token, placeId);
     } else {
+        window.location.href = '/places';
         if (loginLink) loginLink.style.display = 'inline-block';
         if (addReviewSection) addReviewSection.style.display = 'none';
         fetchPlaceDetails(null, placeId);
