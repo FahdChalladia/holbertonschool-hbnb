@@ -1,166 +1,214 @@
-# 🏠 HBnB Evolution
+HBnB Project
+📌 Overview
+HBnB is a full-stack booking platform inspired by Airbnb.
 
-An AirBnB-like web application built with a layered architecture. HBnB allows users to register, list places, leave reviews, and manage amenities in a clean, scalable system.
+Backend: RESTful API managing users, places, reviews, amenities with secure JWT authentication and admin control.
 
-## 🔧 Tech Stack
-- Python (OOP, SOLID Principles)
-- FlowChart for UML
+Frontend: React-based client interface for browsing, booking, and managing listings.
 
-## 📐 Architecture
-- **Presentation Layer**: RESTful API endpoints for user interaction.
-- **Business Logic Layer**: Core models and logic (User, Place, Review, Amenity).
-- **Persistence Layer**: Data repositories and DB abstraction.
+Backend API (Parts 2 & 3)
+Features
+User authentication & authorization with JWT
 
-## 📄 Features
-- ✅ User registration and profile management
-- ✅ Place creation with geolocation
-- ✅ Review system with ratings
-- ✅ Amenity listing and association
-- ✅ Modular, scalable architecture
+Admin role with elevated privileges
 
-## Project Structure
+CRUD operations on Users, Places, Reviews, Amenities
 
-hbnb/
-├── app/
-│ ├── init.py # Flask app factory
-│ ├── api/ # API endpoint modules (organized by version)
-│ ├── models/ # Business entities (User, Place, Review, Amenity)
-│ ├── services/ # Facade pattern implementation
-│ ├── persistence/ # In-memory repository implementation
-├── run.py # Application entry point
-├── config.py # Configuration for different environments
-├── requirements.txt # Python dependencies
-├── README.md # Project documentation
+SQLAlchemy ORM models with well-defined relationships
 
-## Business Logic Layer
+SQLite database with schema setup and initial data
 
-This layer defines core entities and their relationships in the HBnB application:
+Comprehensive API endpoints with input validation and error handling
 
-### Entities
-- `User`: Represents system users with fields like `first_name`, `email`, and `is_admin`.
-- `Place`: Represents properties listed by users. Includes `title`, `description`, `price`, location, and relationships to reviews and amenities.
-- `Review`: Users can leave reviews for places with `text`, `rating`, and references to the place and user.
-- `Amenity`: Features like "Wi-Fi", "Pool", etc.
+Backend Architecture
+Models and Relationships
+User: UUID, first_name, last_name, email (unique), hashed password, is_admin
 
-### Common Features
-- All classes inherit from `BaseModel`, which includes:
-  - `id`: UUID
-  - `created_at` and `updated_at` timestamps
-  - `save()` to update `updated_at`
-  - `update(data_dict)` to apply multiple updates at once
+Place: UUID, title, description, price, coordinates, owner (User)
 
-### Relationships
-- A `User` can own multiple `Places`
-- A `Place` can have many `Reviews` and `Amenities`
-- A `Review` is linked to a single `Place` and `User`
+Review: UUID, text, rating (1-5), user (author), place (target)
 
-### Example Usage
-```python
-user = User("Jane", "Doe", "jane@example.com")
-place = Place("Seaside House", "Lovely ocean view", 150, 36.0, -120.0, user)
-amenity = Amenity("Hot Tub")
-place.add_amenity(amenity)
-review = Review("Perfect getaway!", 5, place, user)
-place.add_review(review)
-```
-### Project Vision and Scope
+Amenity: UUID, unique name
 
-Implement the Presentation Layer using Flask and flask-restx to create RESTful API endpoints.
+PlaceAmenity: Association table linking places and amenities (many-to-many)
 
-Develop the Business Logic Layer with core classes and relationships.
+Relationships
+User → Places (one-to-many)
 
-Use the Facade pattern to simplify interaction between layers.
+User → Reviews (one-to-many)
 
-Implement CRUD operations for Users, Places, Reviews, and Amenities (with some limitations on DELETE).
+Place → Reviews (one-to-many)
 
-Handle data serialization to include related object attributes (e.g., owner details in Place responses).
+Place → Amenities (many-to-many via PlaceAmenity)
 
-Focus on core functionality only; authentication and role-based access control will be added in Part 3.
+Authentication & Admin Control
+JWT tokens issued at login, containing user id and admin status
 
-###Objectives
+Protected routes require Authorization: Bearer <token>
 
-Project Setup: Organize a modular project structure for Presentation, Business Logic, and Persistence layers.
+Admin-only endpoints for managing users, amenities, and viewing all data
 
-Business Logic Implementation: Create classes for User, Place, Review, and Amenity with attributes, methods, and relationships.
+Passwords stored hashed using bcrypt
 
-API Development: Build RESTful endpoints for core entities using Flask-restx, including input validation and response formatting.
+Admin user creation example provided with password hashing snippet
 
-Testing & Validation: Ensure endpoints handle expected and edge cases correctly using cURL, Postman, and automated tests.
+Database Setup
+SQL scripts to create tables and insert initial data (create_schema.sql, insert_initial_data.sql)
 
-Documentation: Leverage Flask-restx to auto-generate Swagger UI documentation.
+Run using sqlite3 CLI
 
-###Tasks Summary
+UUID generation utility provided for unique IDs
 
-0. Project Setup and Package Initialization
-Set up modular folders and packages for Presentation, Business Logic, and Persistence.
+API Endpoints
+User registration and login
 
-Implement an in-memory repository to simulate data storage
+Place listing, creation, update, deletion
 
-Prepare for Facade pattern integration.
+Review management linked to users and places
 
-1. Core Business Logic Classes
-Implement core entities: User, Place, Review, Amenity.
+Amenity management (admin only)
 
-Define attributes, methods, and entity relationships.
+Query filters and pagination for listings
 
-Support data validation and integrity.
+ER Diagram
+mermaid
 
-2. User Endpoints
-Implement POST (create), GET (list and by ID), and PUT (update) for users.
+erDiagram
+    USER {
+        CHAR id PK
+        VARCHAR first_name
+        VARCHAR last_name
+        VARCHAR email
+        VARCHAR password
+        boolean is_admin
+    }
 
-Exclude password from responses.
+    PLACE {
+        CHAR id PK
+        VARCHAR title
+        TEXT description
+        DECIMAL price
+        FLOAT latitude
+        FLOAT longitude
+        CHAR owner_id FK
+    }
 
-No DELETE operation yet.
+    REVIEW {
+        CHAR id PK
+        TEXT text
+        INT rating
+        CHAR user_id FK
+        CHAR place_id FK
+    }
 
-3. Amenity Endpoints
-Implement POST, GET, and PUT endpoints for amenities.
+    AMENITY {
+        CHAR id PK
+        VARCHAR name
+    }
 
-No DELETE operation yet.
+    PLACE_AMENITY {
+        CHAR place_id FK
+        CHAR amenity_id FK
+    }
 
-Follow patterns established in User endpoints.
+    USER ||--o{ PLACE : owns
+    USER ||--o{ REVIEW : writes
+    PLACE ||--o{ REVIEW : receives
+    PLACE ||--o{ PLACE_AMENITY : has
+    AMENITY ||--o{ PLACE_AMENITY : includes
+Frontend Application (Part 4)
+Overview
+The frontend is a React-based single page application that interfaces with the HBnB backend API to provide a rich user experience:
 
-4. Place Endpoints
-Implement POST, GET, and PUT endpoints for places.
+User registration and login with JWT authentication
 
-Handle relationships with User (owner) and Amenity.
+Browse, filter, and search listings of places
 
-Validate attributes such as price, latitude, longitude.
+View place details, amenities, and reviews
 
-No DELETE operation yet.
+Submit reviews and manage bookings
 
-5. Review Endpoints
-Implement full CRUD operations including DELETE.
+Admin dashboard for managing users, places, amenities, and reviews
 
-Associate reviews with both User and Place.
+Responsive design and client-side routing
 
-Update Place endpoints to include reviews.
+Features
+Authentication: Login form stores JWT, protects routes client-side
 
-6. Testing and Validation
-Add validation for input data on all endpoints.
+Listings Page: Display places with filtering by price, amenities, location
 
-Perform manual testing with cURL and Swagger UI.
+Place Details: Detailed info with reviews and amenities
 
-Create and run automated tests with unittest or pytest.
+Review Submission: Authenticated users can add/edit/delete reviews
 
-Document test results, including edge cases.
+Admin Panel: Manage users, places, and amenities with elevated rights
 
-###Technologies & Tools
+State Management: Uses React Context or Redux for global state
 
-Python 3
+Error Handling: User-friendly error messages on failed requests
 
-Flask
+Testing: Frontend unit tests for components and integration with backend mocks
 
-Flask-RESTx (for API and Swagger documentation)
+Tech Stack
+React + React Router for SPA routing
 
-UUID (for unique identifiers)
+Axios or Fetch API for HTTP requests to backend
 
-cURL/Postman (for API testing)
+JWT stored in localStorage or secure HTTP-only cookies
 
-unittest/pytest (for automated testing)
+CSS Modules / Styled Components / Tailwind CSS for styling (depending on implementation)
 
+Running the Frontend
+Install dependencies: npm install or yarn
 
+Configure backend API URL in environment variables
 
+Start development server: npm start
 
-## Authors :black_nib:
-* **Fahd Challadia** <[FahdChalladia](https://github.com/FahdChalladia)>
-* **Yassine khouzemi** <[yaskho](https://github.com/yaskho)>   
+Build for production: npm run build
+
+Getting Started
+Setup Backend
+
+Run SQL scripts to create schema and insert data.
+
+Install Python dependencies (flask, sqlalchemy, bcrypt, pyjwt, etc.).
+
+Run backend server.
+
+Setup Frontend
+
+Install frontend dependencies.
+
+Set backend API URL.
+
+Run frontend server.
+
+Useful Commands
+Backend
+bash
+
+sqlite3 hbnb.db
+.read db_scripts/create_schema.sql
+.read db_scripts/insert_initial_data.sql
+python run.py  # or equivalent command to start backend
+Frontend
+bash
+
+npm install
+npm start
+Additional Resources
+Password Hashing Example
+
+python
+
+import bcrypt
+password = b"admin1234"
+hashed = bcrypt.hashpw(password, bcrypt.gensalt())
+print(hashed.decode())
+UUID Generation
+
+python
+
+import uuid
+print(str(uuid.uuid4()))
