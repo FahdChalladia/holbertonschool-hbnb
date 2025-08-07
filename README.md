@@ -62,7 +62,7 @@ amenity = Amenity("Hot Tub")
 place.add_amenity(amenity)
 review = Review("Perfect getaway!", 5, place, user)
 place.add_review(review)
-
+```
 ### Project Vision and Scope
 
 Implement the Presentation Layer using Flask and flask-restx to create RESTful API endpoints.
