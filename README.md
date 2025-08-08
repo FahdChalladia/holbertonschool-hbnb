@@ -4,7 +4,7 @@ HBnB is a full-stack booking platform inspired by Airbnb.
 
 Backend: RESTful API managing users, places, reviews, amenities with secure JWT authentication and admin control.
 
-Frontend: React-based client interface for browsing, booking, and managing listings.
+Frontend: javascript client html and css for browsing
 
 Backend API (Parts 2 & 3)
 Features
